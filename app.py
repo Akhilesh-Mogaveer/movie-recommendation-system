@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 load_dotenv()
-TMDB_API_KEY = os.getenv('TMDB_API_KEY', 'your_key_here')
+TMDB_API_KEY = os.getenv('TMDB_API_KEY')
 
 
 @st.cache_data
