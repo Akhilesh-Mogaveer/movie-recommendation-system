@@ -1,7 +1,8 @@
-streamlit>=1.45.0
+streamlit
 pandas
 scikit-learn
 requests
 python-dotenv
 numpy
 Pillow
+huggingface_hub

@@ -5,9 +5,30 @@ import requests
 import os
 from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from huggingface_hub import hf_hub_download
 
 load_dotenv()
 TMDB_API_KEY = os.getenv('TMDB_API_KEY')
+
+
+REPO_ID = "Akhileshh1/movie-recommendation-system"
+
+@st.cache_resource
+def download_files():
+    if not os.path.exists("movies_dict.pkl"):
+        hf_hub_download(
+            repo_id=REPO_ID,
+            filename="movies_dict.pkl",
+            local_dir="."
+        )
+
+    if not os.path.exists("similarity.pkl"):
+        hf_hub_download(
+            repo_id=REPO_ID,
+            filename="similarity.pkl",
+            local_dir="."
+        )
+
 
 
 @st.cache_data
@@ -46,7 +67,11 @@ def recommend(movie, movies, similarity):
         return None, None
 
     distances = similarity[movie_index]
-    movie_list = sorted(enumerate(distances), reverse=True, key=lambda x: x[1])[1:6]
+    movie_list = sorted(
+        enumerate(distances),
+        reverse=True,
+        key=lambda x: x[1]
+    )[1:6]
 
     recommended_movies = []
     movie_ids = []
@@ -55,15 +80,15 @@ def recommend(movie, movies, similarity):
         recommended_movies.append(movies.iloc[idx]["title"])
         movie_ids.append(movies.iloc[idx]["movie_id"])
 
-    # Fetch all posters in parallel BUT maintain order
+    
     recommended_posters = [None] * len(movie_ids)
+
     with ThreadPoolExecutor(max_workers=5) as executor:
-        # Submit tasks with index to maintain order
         futures = {
             executor.submit(fetch_poster, mid): i
             for i, mid in enumerate(movie_ids)
         }
-        # Assign results to correct positions
+
         for future in as_completed(futures):
             index = futures[future]
             recommended_posters[index] = future.result()
@@ -71,9 +96,12 @@ def recommend(movie, movies, similarity):
     return recommended_movies, recommended_posters
 
 
-# Main app
+
 st.set_page_config(page_title="Movie Recommender", layout="wide")
 st.title('🎬 Movie Recommendation System')
+
+
+download_files()
 
 movies, similarity = load_models()
 
