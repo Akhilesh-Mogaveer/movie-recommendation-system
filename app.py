@@ -115,5 +115,5 @@ if st.button("Recommend", type="primary"):
         cols = st.columns(5)
         for col, name, poster in zip(cols, names, posters):
             with col:
-                st.image(poster, use_column_width=True)
+                st.image(poster)
                 st.caption(name)
